@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 import Then
 import RxSwift
+import RxCocoa
 import RxGesture
 
 class HomeViewController: UIViewController {
@@ -53,6 +54,11 @@ class HomeViewController: UIViewController {
         $0.distribution = .fillEqually
     }
 
+    private let tableView = UITableView().then {
+        $0.register(UserTableViewCell.self, forCellReuseIdentifier: UserTableViewCell.identifier)
+        $0.rowHeight = 130
+    }
+
     // MARK: - UI Properties
     var bag = DisposeBag()
     var viewModel = HomeViewModel()
@@ -76,7 +82,6 @@ class HomeViewController: UIViewController {
         viewModel.verifyIsAdminUser()
     }
 
-    // 유저네임 편집할 수 있는 alert 띄우기
     func showUpdateUsernameAlert() {
         let alert = UIAlertController(title: "이름 수정", message: "수정할 이름을 입력하세요", preferredStyle: .alert)
         alert.addTextField { (textField) in
@@ -105,10 +110,12 @@ extension HomeViewController {
         view.addSubview(stackViewTop)
         view.addSubview(stackView)
         view.addSubview(labelHome)
+        view.addSubview(tableView)
         
         labelHome.snp.makeConstraints {
             $0.center.equalToSuperview()
         }
+
         stackView.snp.makeConstraints {
             $0.leading.trailing.equalToSuperview()
             $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
@@ -118,6 +125,13 @@ extension HomeViewController {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
         }
         stackViewTop.isHidden = true
+
+        tableView.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview()
+            $0.top.equalTo(stackViewTop.snp.bottom)
+            $0.bottom.equalTo(stackView.snp.top)
+        }
+        tableView.isHidden = true
     }
 }
 
@@ -143,9 +157,34 @@ extension HomeViewController {
                 self.stackViewTop.isHidden = !isAdmin
             })
             .disposed(by: bag)
+        
+        viewModel.output.userList
+            .filter { $0 != nil }
+            .map { $0! }
+            .bind(to: tableView.rx.items(cellIdentifier: UserTableViewCell.identifier, cellType: UserTableViewCell.self)) { (row, user, cell) in
+                cell.setData(model: user)
+                cell.selectionStyle = .none
+            }
+            .disposed(by: bag)
     }
     
     func bindButton() {
+        btnUserTab.rx.tap
+            .subscribe(onNext: { [weak self] in
+                guard let self = self else { return }
+                self.tableView.isHidden = true
+                self.labelHome.isHidden = false
+            }) 
+            .disposed(by: bag)
+        
+        btnAdminTab.rx.tap
+            .subscribe(onNext: { [weak self] in
+                guard let self = self else { return }
+                self.tableView.isHidden = false
+                self.labelHome.isHidden = true
+            })
+            .disposed(by: bag)
+
         btnUpdateUsername.rx.tap
             .subscribe(onNext: { [weak self] in
                 guard let self = self else { return }

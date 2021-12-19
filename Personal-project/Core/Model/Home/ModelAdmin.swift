@@ -18,6 +18,6 @@ struct AdminUserProfileData: Decodable {
     var username: String?
     var email: String?
     var authority: Int?
-    var createdAt: String?
+    var created_at: String?
     var updatedAt: String?
 }
