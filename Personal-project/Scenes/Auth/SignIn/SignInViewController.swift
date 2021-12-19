@@ -6,24 +6,34 @@
 //
 
 import UIKit
+import SnapKit
+import Then
 
 class SignInViewController: UIViewController {
+    
+    // MARK: - UI Properties
+    private let labelSignin = UILabel().then {
+        $0.text = "로그인 뷰"
+        $0.font = .systemFont(ofSize: 40)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        
+        view.backgroundColor = .white
+        
+        configureView()
     }
-    
 
-    /*
-    // MARK: - Navigation
+}
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+// MARK: - BaseViewController
+extension SignInViewController {
+    func configureView() {
+        view.addSubview(labelSignin)
+        
+        labelSignin.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
     }
-    */
-
 }

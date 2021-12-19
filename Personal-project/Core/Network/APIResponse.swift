@@ -8,7 +8,24 @@
 import Foundation
 
 
-// MARK: - APIResult
+/// API Response
+protocol APIResponse: Decodable {
+    associatedtype DataType: Decodable
+    
+    var success: Bool? { get }
+    var msg: String? { get }
+    var data: DataType? { get }
+}
 
+/// APIResult
+struct APIResult<T: Decodable> {
+    var error: APIError?
+    var response: T?
+}
 
-// MARK: - APIError
+/// APIError
+enum APIError: Error {
+    case decodingError
+    case httpError(Int)
+    case unknown
+}

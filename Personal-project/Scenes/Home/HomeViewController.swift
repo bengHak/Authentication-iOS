@@ -6,24 +6,43 @@
 //
 
 import UIKit
+import SnapKit
+import Then
 
 class HomeViewController: UIViewController {
+    
+    // MARK: - UI Properties
+    private let labelHome = UILabel().then {
+        $0.text = "kajsdlfj"
+        $0.font = .systemFont(ofSize: 40)
+    }
+    
+    private let btnUpdateUsername = UIButton().then {
+        $0.setTitle("이름 수정", for: .normal)
+    }
+    
+    private let btnSignout = UIButton().then {
+        $0.setTitle("로그아웃", for: .normal)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        view.backgroundColor = .white
 
-        // Do any additional setup after loading the view.
+        configureView()
     }
+
+}
+
+// MARK: - BaseViewController
+extension HomeViewController {
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    func configureView() {
+        view.addSubview(labelHome)
+        
+        labelHome.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
     }
-    */
-
 }

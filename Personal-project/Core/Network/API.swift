@@ -28,7 +28,7 @@ enum API {
 extension API {
     /// base url
     var baseUrl: String {
-        "http://localhost:8080"
+        "http://localhost:8080/api"
     }
     
     /// api url path
