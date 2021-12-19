@@ -37,7 +37,6 @@ class SplashViewController: UIViewController {
     // MARK: - Helpers
     func move2ViewController(isSigninNeeded: Bool) {
         setNeedsStatusBarAppearanceUpdate()
-        
         var vc: UIViewController
         if isSigninNeeded {
             vc = SignInViewController()
@@ -45,7 +44,8 @@ class SplashViewController: UIViewController {
             vc = HomeViewController()
         }
         
-        view.window?.rootViewController = vc
+        let navigationController = UINavigationController(rootViewController: vc)
+        view.window?.rootViewController = navigationController
         view.window?.makeKeyAndVisible()
     }
     

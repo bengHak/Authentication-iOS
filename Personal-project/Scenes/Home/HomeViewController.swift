@@ -137,7 +137,8 @@ extension HomeViewController {
                 self.viewModel.signOut()
                 DispatchQueue.main.async {
                     self.setNeedsStatusBarAppearanceUpdate()
-                    self.view.window?.rootViewController = SignInViewController()
+                    let navigationController = UINavigationController(rootViewController: SignInViewController())
+                    self.view.window?.rootViewController = navigationController
                     self.view.window?.makeKeyAndVisible()
                 }
             })

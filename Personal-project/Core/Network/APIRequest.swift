@@ -11,6 +11,7 @@ import SwiftKeychainWrapper
 
 struct APIRequest {
     
+    /// 자신의 프로필 불러오기
     func getUserProfile(handler: @escaping (Result<ProfileData, APIError>) -> Void) {
         let endpoint: API = .requestMyProfile
         let urlString = endpoint.path
@@ -45,6 +46,7 @@ struct APIRequest {
             }
     }
     
+    /// 관리자 권한으로 유저 목록 불러오기
     func getUserList(handler: @escaping (Result<[AdminUserProfileData], APIError>) -> Void) {
         let endpoint: API = .requestUserList
         let accessToken = KeychainWrapper.standard.string(forKey: "accessToken")
@@ -72,7 +74,73 @@ struct APIRequest {
                 }
             }
     }
-    
+
+    // 로그인 요청
+    func requestLogin(email: String, password: String, handler: @escaping (Result<ModelSignInResult, APIError>) -> Void) {
+        let endpoint: API = .requestSignin
+        let urlString = endpoint.path
+        let method = endpoint.httpMethod
+        let parameters: [String: Any] = [
+            "email": email,
+            "password": password
+        ]
+        
+        AF.request(urlString, method: method, parameters: parameters, encoding: JSONEncoding.default)
+            .responseDecodable(of: ModelSignInResponse.self) { response in
+                
+                switch response.result {
+                case let .success(responseData):
+                    if let statusCode = response.response?.statusCode,
+                       (400..<500).contains(statusCode) {
+                        handler(.failure(.httpError(statusCode)))
+                        print("[request login] unauthorized")
+                        return
+                    }
+                    guard let loginData = responseData.data else {
+                              handler(.failure(.decodingError))
+                              return
+                          }
+                    handler(.success(loginData))
+                    
+                case .failure(_):
+                    handler(.failure(.unknown))
+                }
+        }
+    }
+
+    // 회원가입: 이메일, 비밀번호, 유저네임
+    func requestSignUp(email: String, username: String, password: String, handler: @escaping (Result<String, APIError>) -> Void) {
+        let endpoint: API = .requestSignup
+        let urlString = endpoint.path
+        let method = endpoint.httpMethod
+        let parameters: [String: Any] = [
+            "email": email,
+            "username": username,
+            "password": password
+        ]
+        
+        AF.request(urlString, method: method, parameters: parameters, encoding: JSONEncoding.default)
+            .responseDecodable(of: ModelSignUpResponse.self) { response in
+                
+                switch response.result {
+                case let .success(responseData):
+                    if let statusCode = response.response?.statusCode,
+                       (400..<500).contains(statusCode) {
+                        handler(.failure(.httpError(statusCode)))
+                        print("[request sign up] unauthorized")
+                        return
+                    }
+                    guard let signUpData = responseData.data else {
+                              handler(.failure(.decodingError))
+                              return
+                          }
+                    handler(.success(signUpData))
+                    
+                case .failure(_):
+                    handler(.failure(.unknown))
+                }
+        }
+    }
     
     func responseHandler() {
         
