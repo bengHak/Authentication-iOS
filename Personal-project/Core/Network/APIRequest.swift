@@ -45,6 +45,34 @@ struct APIRequest {
             }
     }
     
+    func getUserList(handler: @escaping (Result<[AdminUserProfileData], APIError>) -> Void) {
+        let endpoint: API = .requestUserList
+        let accessToken = KeychainWrapper.standard.string(forKey: "accessToken")
+        let headers: Alamofire.HTTPHeaders = ["Authorization": "Bearer " + (accessToken ?? "")]
+        
+        AF.request(endpoint.path, method: endpoint.httpMethod, headers: headers)
+            .responseDecodable(of: ModelUserList.self) { response in
+                
+                switch response.result {
+                case let .success(responseData):
+                    if let statusCode = response.response?.statusCode,
+                       (400..<500).contains(statusCode) {
+                        handler(.failure(.httpError(statusCode)))
+                        print("[get user list] unauthorized")
+                        return
+                    }
+                    guard let userList = responseData.data else {
+                              handler(.failure(.decodingError))
+                              return
+                          }
+                    handler(.success(userList))
+                    
+                case .failure(_):
+                    handler(.failure(.unknown))
+                }
+            }
+    }
+    
     
     func responseHandler() {
         

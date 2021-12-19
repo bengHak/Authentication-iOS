@@ -10,6 +10,7 @@ target 'Personal-project' do
   # Rx
   pod 'RxSwift', '6.2.0'
   pod 'RxCocoa', '6.2.0'
+  pod "RxGesture"
   
   # UI
   pod 'SnapKit', '~> 5.0.0'

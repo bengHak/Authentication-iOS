@@ -6,3 +6,18 @@
 //
 
 import Foundation
+
+struct ModelUserList: APIResponse {
+    var success: Bool?
+    var msg: String?
+    var data: [AdminUserProfileData]?
+}
+
+struct AdminUserProfileData: Decodable {
+    var id: Int?
+    var username: String?
+    var email: String?
+    var authority: Int?
+    var createdAt: String?
+    var updatedAt: String?
+}
