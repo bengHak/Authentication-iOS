@@ -6,3 +6,7 @@
 //
 
 import Foundation
+
+struct ModelUpdateUsernameResponse: Decodable {
+    var success: Bool?
+}

@@ -75,6 +75,21 @@ class HomeViewController: UIViewController {
         viewModel.fetchUserProfile()
         viewModel.verifyIsAdminUser()
     }
+
+    // 유저네임 편집할 수 있는 alert 띄우기
+    func showUpdateUsernameAlert() {
+        let alert = UIAlertController(title: "이름 수정", message: "수정할 이름을 입력하세요", preferredStyle: .alert)
+        alert.addTextField { (textField) in
+            textField.placeholder = "이름을 입력하세요"
+        }
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "확인", style: .default, handler: { [weak self] (_) in
+            guard let self = self else { return }
+            guard let textField = alert.textFields?.first else { return }
+            self.viewModel.updateUsername(username: textField.text ?? "")
+        }))
+        present(alert, animated: true, completion: nil)
+    }
 }
 
 // MARK: - BaseViewController
@@ -131,6 +146,13 @@ extension HomeViewController {
     }
     
     func bindButton() {
+        btnUpdateUsername.rx.tap
+            .subscribe(onNext: { [weak self] in
+                guard let self = self else { return }
+                self.showUpdateUsernameAlert()
+            })
+            .disposed(by: bag)
+
         btnSignout.rx.tap
             .subscribe(onNext: { [weak self] _ in
                 guard let self = self else { return }

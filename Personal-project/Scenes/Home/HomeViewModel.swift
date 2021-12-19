@@ -69,8 +69,16 @@ extension HomeViewModel {
         }
     }
     
-    func updateUserProfile() {
-        
+    func updateUsername(username: String) {
+        apiRequest.requestUpdateUsername(username: username) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(_):
+                self.fetchUserProfile()
+            case .failure(_):
+                print("failed to update username")
+            }
+        }
     }
     
     func signOut() {

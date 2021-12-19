@@ -141,6 +141,36 @@ struct APIRequest {
                 }
         }
     }
+
+    // username 수정
+    func requestUpdateUsername(username: String, handler: @escaping (Result<Bool, APIError>) -> Void) {
+        let endpoint: API = .requestUpdateProfile
+        let urlString = endpoint.path
+        let method = endpoint.httpMethod
+        let accessToken = KeychainWrapper.standard.string(forKey: "accessToken")
+        let headers: Alamofire.HTTPHeaders = ["Authorization": "Bearer " + (accessToken ?? "")]
+        let parameters: [String: Any] = [
+            "username": username
+        ]
+        
+        AF.request(urlString, method: method, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+            .responseDecodable(of: ModelUpdateUsernameResponse.self) { response in
+                
+                switch response.result {
+                case let .success(responseData):
+                    if let statusCode = response.response?.statusCode,
+                       (400..<500).contains(statusCode) {
+                        handler(.failure(.httpError(statusCode)))
+                        print("[request update username] unauthorized")
+                        return
+                    }
+                    handler(.success(responseData.success ?? false))
+                    
+                case .failure(_):
+                    handler(.failure(.unknown))
+                }
+        }
+    }
     
     func responseHandler() {
         
