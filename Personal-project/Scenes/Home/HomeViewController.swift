@@ -119,6 +119,20 @@ class HomeViewController: UIViewController {
         }))
         present(alert, animated: true, completion: nil)
     }
+
+    func showUpdateAuthorityActionSheet(userId: Int) {
+        let alert = UIAlertController(title: "권한 수정", message: "권한을 선택하세요", preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "관리자", style: .default, handler: { [weak self] (_) in
+            guard let self = self else { return }
+            self.viewModel.updateAuthority(userId: userId, authority: .admin)
+        }))
+        alert.addAction(UIAlertAction(title: "사용자", style: .default, handler: { [weak self] (_) in
+            guard let self = self else { return }
+            self.viewModel.updateAuthority(userId: userId, authority: .user)
+        }))
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
     
 }
 
@@ -256,5 +270,8 @@ extension HomeViewController: UserTableCellDelegate {
         showUserDeleteAlert(userId: userId, username: username)
     }
     
+    func updateAuthority(userId: Int) {
+        showUpdateAuthorityActionSheet(userId: userId)
+    }
     
 }

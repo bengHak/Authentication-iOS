@@ -228,6 +228,34 @@ struct APIRequest {
                 }
         }
     }
+
+    // 사용자 권한 설정
+    func requestUpdateAuthority(userId: Int, authority: Int, handler: @escaping (Result<Bool, APIError>) -> Void) {
+        let endpoint: API = .requestUpdateUserAuthority(userId: userId)
+        let urlString = endpoint.path
+        let method = endpoint.httpMethod
+        let accessToken = KeychainWrapper.standard.string(forKey: "accessToken")
+        let headers: Alamofire.HTTPHeaders = ["Authorization": "Bearer " + (accessToken ?? "")]
+        let parameters: Alamofire.Parameters = ["authority" : authority]
+        
+        AF.request(urlString, method: method, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+            .responseDecodable(of: ModelAdminUpdateUsernameResponse.self) { response in
+                
+                switch response.result {
+                case let .success(responseData):
+                    if let statusCode = response.response?.statusCode,
+                       (400..<500).contains(statusCode) {
+                        handler(.failure(.httpError(statusCode)))
+                        print("[request update authority] unauthorized")
+                        return
+                    }
+                    handler(.success(responseData.success ?? false))
+                    
+                case .failure(_):
+                    handler(.failure(.unknown))
+                }
+        }
+    }
     
     func responseHandler() {
         

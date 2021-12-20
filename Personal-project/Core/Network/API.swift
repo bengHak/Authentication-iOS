@@ -71,7 +71,7 @@ extension API {
         case .requestUpdateUserProfile:
             return .put
         case .requestUpdateUserAuthority:
-            return .post
+            return .put
         }
     }
 }

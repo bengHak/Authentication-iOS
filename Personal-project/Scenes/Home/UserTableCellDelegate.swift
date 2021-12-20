@@ -10,4 +10,5 @@ import Foundation
 protocol UserTableCellDelegate: AnyObject {
     func updateAdminUsername(userId: Int, username: String)
     func deleteUser(userId: Int, username: String)
+    func updateAuthority(userId: Int)
 }

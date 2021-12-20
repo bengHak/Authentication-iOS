@@ -43,6 +43,18 @@ class UserTableViewCell: UITableViewCell {
         $0.setTitleColor(.black, for: .normal)
         $0.setTitleColor(.red, for: .highlighted)
     }
+    
+    let buttonUpdateAuthority = UIButton().then {
+        $0.setTitle("권한수정", for: .normal)
+        $0.setTitleColor(.black, for: .normal)
+        $0.setTitleColor(.red, for: .highlighted)
+    }
+
+    let labelAdmin = UILabel().then {
+        $0.text = "관리자"
+        $0.font = .systemFont(ofSize: 14, weight: .bold)
+        $0.textColor = .red
+    }
 
     // MARK: - Properties
     static let identifier = "UserTableViewCell"
@@ -68,11 +80,19 @@ class UserTableViewCell: UITableViewCell {
         self.contentView.addSubview(labelUserCreatedAt)
         self.contentView.addSubview(buttonUpdateUsername)
         self.contentView.addSubview(buttonDeleteUser)
+        self.contentView.addSubview(buttonUpdateAuthority)
+        self.contentView.addSubview(labelAdmin)
         
         labelUserId.snp.makeConstraints {
             $0.top.equalToSuperview().offset(6)
             $0.leading.equalToSuperview().offset(20)
         }
+
+        labelAdmin.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(6)
+            $0.trailing.equalToSuperview().inset(20)
+        }
+        labelAdmin.isHidden = true
         
         labelUserName.snp.makeConstraints {
             $0.top.equalTo(labelUserId.snp.bottom).offset(6)
@@ -98,11 +118,17 @@ class UserTableViewCell: UITableViewCell {
             $0.top.equalTo(labelUserCreatedAt.snp.bottom).offset(6)
             $0.leading.equalTo(buttonUpdateUsername.snp.trailing).offset(6)
         }
+        
+        buttonUpdateAuthority.snp.makeConstraints {
+            $0.top.equalTo(labelUserCreatedAt.snp.bottom).offset(6)
+            $0.leading.equalTo(buttonDeleteUser.snp.trailing).offset(6)
+        }
     }
     
     func setButtons() {
         buttonDeleteUser.addTarget(self, action: #selector(deleteUser(_:)), for: .touchUpInside)
         buttonUpdateUsername.addTarget(self, action: #selector(updateUsername(_:)), for: .touchUpInside)
+        buttonUpdateAuthority.addTarget(self, action: #selector(updateAuthority(_:)), for: .touchUpInside)
     }
     
     @objc func deleteUser(_ sender: Any) {
@@ -121,12 +147,23 @@ class UserTableViewCell: UITableViewCell {
         delegate?.updateAdminUsername(userId: userId, username: username)
     }
     
+    @objc func updateAuthority(_ sender: Any) {
+        guard let userId = userProfileData?.id else { return }
+        delegate?.updateAuthority(userId: userId)
+    }
+    
     func setData(model: AdminUserProfileData) {
         userProfileData = model
         labelUserId.text = "ID: \(model.id ?? -1)"
         labelUserName.text = "이름: \(model.username ?? "")"
         labelUserEmail.text = "이메일: \(model.email ?? "")"
         labelUserCreatedAt.text = "가입일: \((model.created_at ?? "").split(separator: "T")[0])"
+
+        if userProfileData?.authority == 1 {
+            labelAdmin.isHidden = false
+        } else {
+            labelAdmin.isHidden = true
+        }
     }
 }
 

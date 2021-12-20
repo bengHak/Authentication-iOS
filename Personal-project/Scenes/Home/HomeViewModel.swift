@@ -105,9 +105,26 @@ extension HomeViewModel {
         }
     }
 
+    func updateAuthority(userId: Int, authority: Authority) {
+        apiRequest.requestUpdateAuthority(userId: userId, authority: authority.rawValue) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(_):
+                self.verifyIsAdminUser()
+            case .failure(_):
+                print("failed to update authority")
+            }
+        }
+    }
+
     
     func signOut() {
         KeychainWrapper.standard.remove(forKey: "accessToken")
     }
     
+    
+    enum Authority: Int {
+        case admin = 1
+        case user = 0
+    }
 }
