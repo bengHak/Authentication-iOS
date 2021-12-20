@@ -95,6 +95,31 @@ class HomeViewController: UIViewController {
         }))
         present(alert, animated: true, completion: nil)
     }
+    
+    func showUpdateAdminUsernameAlert(userId: Int, username: String) {
+        let alert = UIAlertController(title: "\(username)님의 유저네임 수정", message: "수정할 이름을 입력하세요", preferredStyle: .alert)
+        alert.addTextField { (textField) in
+            textField.placeholder = "이름을 입력하세요"
+        }
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "확인", style: .default, handler: { [weak self] (_) in
+            guard let self = self else { return }
+            guard let textField = alert.textFields?.first else { return }
+            self.viewModel.updateUsernameWithAdmin(userId: userId, username: textField.text ?? "")
+        }))
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func showUserDeleteAlert(userId: Int, username: String) {
+        let alert = UIAlertController(title: "\(username)님 삭제", message: "사용자를 삭제하시겠습니까?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "확인", style: .default, handler: { [weak self] (_) in
+            guard let self = self else { return }
+            self.viewModel.deleteUser(userId: userId)
+        }))
+        present(alert, animated: true, completion: nil)
+    }
+    
 }
 
 // MARK: - BaseViewController
@@ -140,6 +165,7 @@ extension HomeViewController {
 extension HomeViewController {
     func bindRx() {
         bindViewModel()
+        bindTable()
         bindButton()
     }
     
@@ -157,13 +183,23 @@ extension HomeViewController {
                 self.stackViewTop.isHidden = !isAdmin
             })
             .disposed(by: bag)
-        
+    }
+    
+    func bindTable() {
         viewModel.output.userList
             .filter { $0 != nil }
             .map { $0! }
-            .bind(to: tableView.rx.items(cellIdentifier: UserTableViewCell.identifier, cellType: UserTableViewCell.self)) { (row, user, cell) in
+            .bind(to: tableView.rx.items(cellIdentifier: UserTableViewCell.identifier, cellType: UserTableViewCell.self)) { [weak self] (row, user, cell) in
+                guard let self = self else { return }
                 cell.setData(model: user)
                 cell.selectionStyle = .none
+                
+                guard let userId = user.id,
+                      let username = user.username else {
+                          return
+                      }
+                
+                cell.delegate = self
             }
             .disposed(by: bag)
     }
@@ -205,5 +241,20 @@ extension HomeViewController {
             })
             .disposed(by: bag)
     }
+    
+}
+
+// MARK: - UserTableCellDelegate
+extension HomeViewController: UserTableCellDelegate {
+    func updateAdminUsername(userId: Int, username: String) {
+        print("update admin username: \(userId), \(username)")
+        showUpdateAdminUsernameAlert(userId: userId, username: username)
+    }
+    
+    func deleteUser(userId: Int, username: String) {
+        print("delete user: \(userId)")
+        showUserDeleteAlert(userId: userId, username: username)
+    }
+    
     
 }

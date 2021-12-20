@@ -80,6 +80,31 @@ extension HomeViewModel {
             }
         }
     }
+
+    func updateUsernameWithAdmin(userId: Int, username: String) {
+        apiRequest.requestAdminUpdateUsername(userId: userId, username: username) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(_):
+                self.verifyIsAdminUser()
+            case .failure(_):
+                print("failed to update admin username")
+            }
+        }
+    }
+
+    func deleteUser(userId: Int) {
+        apiRequest.requestUserDelete(userId: userId) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(_):
+                self.verifyIsAdminUser()
+            case .failure(_):
+                print("failed to delete user")
+            }
+        }
+    }
+
     
     func signOut() {
         KeychainWrapper.standard.remove(forKey: "accessToken")

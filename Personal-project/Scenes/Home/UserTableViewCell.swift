@@ -32,27 +32,29 @@ class UserTableViewCell: UITableViewCell {
         $0.font = .systemFont(ofSize: 14)
     }
 
-    private let buttonUpdateUsername = UIButton().then {
+    let buttonUpdateUsername = UIButton().then {
         $0.setTitle("이름수정", for: .normal)
         $0.setTitleColor(.black, for: .normal)
         $0.setTitleColor(.red, for: .highlighted)
     }
 
-    private let buttonDeleteUser = UIButton().then {
+    let buttonDeleteUser = UIButton().then {
         $0.setTitle("삭제", for: .normal)
         $0.setTitleColor(.black, for: .normal)
         $0.setTitleColor(.red, for: .highlighted)
     }
-    
 
     // MARK: - Properties
     static let identifier = "UserTableViewCell"
-    
+    let apiRequest = APIRequest()
+    var userProfileData: AdminUserProfileData?
+    var delegate: UserTableCellDelegate?
 
     // MARK: - Lifecycles
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: UserTableViewCell.identifier)
         self.setUI()
+        self.setButtons()
     }
     
     required init?(coder: NSCoder) {
@@ -69,37 +71,58 @@ class UserTableViewCell: UITableViewCell {
         
         labelUserId.snp.makeConstraints {
             $0.top.equalToSuperview().offset(6)
-            $0.leading.equalToSuperview().offset(6)
+            $0.leading.equalToSuperview().offset(20)
         }
         
         labelUserName.snp.makeConstraints {
             $0.top.equalTo(labelUserId.snp.bottom).offset(6)
-            $0.leading.equalToSuperview().offset(6)
+            $0.leading.equalToSuperview().offset(20)
         }
         
         labelUserEmail.snp.makeConstraints {
             $0.top.equalTo(labelUserName.snp.bottom).offset(6)
-            $0.leading.equalToSuperview().offset(6)
+            $0.leading.equalToSuperview().offset(20)
         }
         
         labelUserCreatedAt.snp.makeConstraints {
             $0.top.equalTo(labelUserEmail.snp.bottom).offset(6)
-            $0.leading.equalToSuperview().offset(6)
+            $0.leading.equalToSuperview().offset(20)
         }
         
         buttonUpdateUsername.snp.makeConstraints {
             $0.top.equalTo(labelUserCreatedAt.snp.bottom).offset(6)
-            $0.leading.equalToSuperview().offset(6)
+            $0.leading.equalToSuperview().offset(20)
         }
         
         buttonDeleteUser.snp.makeConstraints {
             $0.top.equalTo(labelUserCreatedAt.snp.bottom).offset(6)
             $0.leading.equalTo(buttonUpdateUsername.snp.trailing).offset(6)
         }
-        
+    }
+    
+    func setButtons() {
+        buttonDeleteUser.addTarget(self, action: #selector(deleteUser(_:)), for: .touchUpInside)
+        buttonUpdateUsername.addTarget(self, action: #selector(updateUsername(_:)), for: .touchUpInside)
+    }
+    
+    @objc func deleteUser(_ sender: Any) {
+        guard let userId = userProfileData?.id,
+              let username = userProfileData?.username else {
+                  return
+              }
+        delegate?.deleteUser(userId: userId, username: username)
+    }
+    
+    @objc func updateUsername(_ sender: Any) {
+        guard let userId = userProfileData?.id,
+              let username = userProfileData?.username else {
+                  return
+              }
+        delegate?.updateAdminUsername(userId: userId, username: username)
     }
     
     func setData(model: AdminUserProfileData) {
+        userProfileData = model
         labelUserId.text = "ID: \(model.id ?? -1)"
         labelUserName.text = "이름: \(model.username ?? "")"
         labelUserEmail.text = "이메일: \(model.email ?? "")"

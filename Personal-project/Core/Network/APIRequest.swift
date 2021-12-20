@@ -172,6 +172,63 @@ struct APIRequest {
         }
     }
     
+    // 관리자 계정으로 사용자 username 수정
+    func requestAdminUpdateUsername(userId: Int, username: String, handler: @escaping (Result<Bool, APIError>) -> Void) {
+        let endpoint: API = .requestUpdateUserProfile(userId: userId)
+        let urlString = endpoint.path
+        let method = endpoint.httpMethod
+        let accessToken = KeychainWrapper.standard.string(forKey: "accessToken")
+        let headers: Alamofire.HTTPHeaders = ["Authorization": "Bearer " + (accessToken ?? "")]
+        let parameters: [String: Any] = [
+            "username": username
+        ]
+        
+        AF.request(urlString, method: method, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+            .responseDecodable(of: ModelAdminUpdateUsernameResponse.self) { response in
+                
+                switch response.result {
+                case let .success(responseData):
+                    if let statusCode = response.response?.statusCode,
+                       (400..<500).contains(statusCode) {
+                        handler(.failure(.httpError(statusCode)))
+                        print("[request update username] unauthorized")
+                        return
+                    }
+                    handler(.success(responseData.success ?? false))
+                    
+                case .failure(_):
+                    handler(.failure(.unknown))
+                }
+        }
+    }
+
+    // 유저 삭제
+    func requestUserDelete(userId: Int, handler: @escaping (Result<Bool, APIError>) -> Void) {
+        let endpoint: API = .requestDeleteUser(userId: userId)
+        let urlString = endpoint.path
+        let method = endpoint.httpMethod
+        let accessToken = KeychainWrapper.standard.string(forKey: "accessToken")
+        let headers: Alamofire.HTTPHeaders = ["Authorization": "Bearer " + (accessToken ?? "")]
+        
+        AF.request(urlString, method: method, headers: headers)
+            .responseDecodable(of: ModelAdminUpdateUsernameResponse.self) { response in
+                
+                switch response.result {
+                case let .success(responseData):
+                    if let statusCode = response.response?.statusCode,
+                       (400..<500).contains(statusCode) {
+                        handler(.failure(.httpError(statusCode)))
+                        print("[request user delete] unauthorized")
+                        return
+                    }
+                    handler(.success(responseData.success ?? false))
+                    
+                case .failure(_):
+                    handler(.failure(.unknown))
+                }
+        }
+    }
+    
     func responseHandler() {
         
     }

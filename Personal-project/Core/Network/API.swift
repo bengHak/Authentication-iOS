@@ -69,7 +69,7 @@ extension API {
         case .requestDeleteUser:
             return .delete
         case .requestUpdateUserProfile:
-            return .post
+            return .put
         case .requestUpdateUserAuthority:
             return .post
         }

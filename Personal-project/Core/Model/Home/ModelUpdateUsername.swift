@@ -10,3 +10,9 @@ import Foundation
 struct ModelUpdateUsernameResponse: Decodable {
     var success: Bool?
 }
+
+
+struct ModelAdminUpdateUsernameResponse: Decodable {
+    var success: Bool?
+    var msg: String?
+}
