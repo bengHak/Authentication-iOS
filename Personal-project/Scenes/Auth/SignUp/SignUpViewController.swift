@@ -14,7 +14,7 @@ class SignUpViewController: UIViewController {
 
     // MARK: - UI Properties
     private let labelSignup = UILabel().then {
-        $0.text = "회원가입 뷰"
+        $0.text = "회원가입"
         $0.font = .systemFont(ofSize: 40)
     }
 
@@ -55,9 +55,10 @@ class SignUpViewController: UIViewController {
     }
 
     // 회원가입 버튼
-    private let buttonSignup = UIButton().then {
-        $0.setTitle("회원가입", for: .normal)
-        $0.setTitleColor(.systemBlue, for: .normal)
+    private let buttonNext = UIButton().then {
+        $0.setTitle("다음", for: .normal)
+        $0.setTitleColor(.white, for: .normal)
+        $0.backgroundColor = .systemBlue
         $0.layer.cornerRadius = 10
     }
 
@@ -75,6 +76,18 @@ class SignUpViewController: UIViewController {
         bind()
     }
 
+    // MARK: - Helpers
+    func showFieldErrorAlert(message: String) {
+        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func isValidEmail(testStr:String) -> Bool {
+        let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailTest = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
+        return emailTest.evaluate(with: testStr)
+    }
 }
 
 extension SignUpViewController {
@@ -85,7 +98,7 @@ extension SignUpViewController {
         view.addSubview(textFieldPassword)
         view.addSubview(textFieldPasswordConfirm)
         view.addSubview(labelPasswordError)
-        view.addSubview(buttonSignup)
+        view.addSubview(buttonNext)
         
         labelSignup.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(100)
@@ -117,7 +130,7 @@ extension SignUpViewController {
             $0.leading.trailing.equalToSuperview().inset(20)
         }
 
-        buttonSignup.snp.makeConstraints {
+        buttonNext.snp.makeConstraints {
             $0.top.equalTo(textFieldPasswordConfirm.snp.bottom).offset(100)
             $0.leading.trailing.equalToSuperview().inset(20)
             $0.height.equalTo(50)
@@ -136,6 +149,12 @@ extension SignUpViewController {
         textFieldEmail.rx.text.orEmpty
             .subscribe(onNext: { [weak self] email in
                 self?.viewModel.input.email = email
+            })
+            .disposed(by: bag)
+        
+        textFieldEmail.rx.text.throttle(.seconds(1), scheduler: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in
+                self?.viewModel.verifyEmail()
             })
             .disposed(by: bag)
 
@@ -164,10 +183,33 @@ extension SignUpViewController {
     }
 
     func bindButton() {
-        buttonSignup.rx.tap
+        buttonNext.rx.tap
             .subscribe(onNext: { [weak self] in
-                print("hello")
-                self?.viewModel.signUp()
+                guard let self = self else { return }
+                
+                if self.viewModel.input.email.isEmpty ||
+                    self.viewModel.input.username.isEmpty ||
+                    self.viewModel.input.password.isEmpty ||
+                    !self.isValidEmail(testStr: self.viewModel.input.email) ||
+                    self.viewModel.input.password != self.viewModel.input.passwordConfirm {
+                    DispatchQueue.main.async {
+                        self.showFieldErrorAlert(message: "올바르지 못한 입력 값이 있습니다.")
+                    }
+                    return
+                }
+                
+                // 이메일 중복 체크
+                if self.viewModel.dependency.isEmailDuplicated.value {
+                    DispatchQueue.main.async {
+                        self.showFieldErrorAlert(message: "중복된 이메일입니다.")
+                    }
+                } else {
+                    self.viewModel.sendCodeMail()
+                    let vc = EmailVerificationViewController(email: self.viewModel.input.email,
+                                                             username: self.viewModel.input.username,
+                                                             password: self.viewModel.input.password)
+                    self.navigationController?.pushViewController(vc, animated: true)
+                }
             })
             .disposed(by: bag)
     }

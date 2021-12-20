@@ -14,7 +14,7 @@ class SignInViewController: UIViewController {
     
     // MARK: - UI Properties
     private let labelSignin = UILabel().then {
-        $0.text = "로그인 뷰"
+        $0.text = "로그인"
         $0.font = .systemFont(ofSize: 40)
     }
 

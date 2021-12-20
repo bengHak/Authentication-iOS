@@ -257,6 +257,60 @@ struct APIRequest {
         }
     }
     
+    // 인증 코드를 위한 이메일 발신
+    func request2SendMail(email: String, handler: @escaping (Result<Bool, APIError>) -> Void) {
+        let endpoint: API = .requestCodeMail(email: email)
+        let urlString = endpoint.path
+        let method = endpoint.httpMethod
+        let parameters: Alamofire.Parameters = [ "email": email ]
+        
+        AF.request(urlString, method: method, parameters: parameters, encoding: JSONEncoding.default)
+            .responseDecodable(of: ModelAdminUpdateUsernameResponse.self) { response in
+                switch response.result {
+                case let .success(responseData):
+                    handler(.success(responseData.success ?? false))
+                case .failure(_):
+                    handler(.failure(.unknown))
+                }
+        }
+    }
+    
+    // 인증 코드 확인
+    func verifyCode(email: String, code: String, handler: @escaping (Result<Bool, APIError>) -> Void) {
+        let endpoint: API = .verifyCode(email: email, code: code)
+        let urlString = endpoint.path
+        let method = endpoint.httpMethod
+        let parameters: Alamofire.Parameters = [ "email": email, "code": code ]
+        
+        AF.request(urlString, method: method, parameters: parameters, encoding: JSONEncoding.default)
+            .responseDecodable(of: ModelAdminUpdateUsernameResponse.self) { response in
+                switch response.result {
+                case let .success(responseData):
+                    handler(.success(responseData.success ?? false))
+                case .failure(_):
+                    handler(.failure(.unknown))
+                }
+        }
+    }
+
+    // 이메일 중복 확인
+    func verifyEmail(email: String, handler: @escaping (Result<Bool, APIError>) -> Void) {
+        let endpoint: API = .verifyEmail(email: email)
+        let urlString = endpoint.path
+        let method = endpoint.httpMethod
+        let parameters: Alamofire.Parameters = [ "email": email ]
+        
+        AF.request(urlString, method: method, parameters: parameters, encoding: JSONEncoding.default)
+            .responseDecodable(of: ModelAdminUpdateUsernameResponse.self) { response in
+                switch response.result {
+                case let .success(responseData):
+                    handler(.success(responseData.success ?? false))
+                case .failure(_):
+                    handler(.failure(.unknown))
+                }
+        }
+    }
+    
     func responseHandler() {
         
     }

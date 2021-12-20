@@ -12,6 +12,8 @@ enum API {
     // auth
     case requestSignin
     case requestSignup
+    case verifyEmail(email: String)
+    case verifyCode(email: String, code: String)
     
     // user
     case requestMyProfile
@@ -23,6 +25,9 @@ enum API {
     case requestDeleteUser(userId: Int)
     case requestUpdateUserProfile(userId: Int)
     case requestUpdateUserAuthority(userId: Int)
+    
+    // mail
+    case requestCodeMail(email: String)
 }
 
 extension API {
@@ -38,6 +43,10 @@ extension API {
             return "\(self.baseUrl)/auth/signin"
         case .requestSignup:
             return "\(self.baseUrl)/auth/signup"
+        case .verifyEmail(_):
+            return "\(self.baseUrl)/auth/verify/email"
+        case .verifyCode(_, _):
+            return "\(self.baseUrl)/auth/verify/code"
         case .requestMyProfile, .requestUpdateProfile:
             return "\(self.baseUrl)/user/me/profile"
         case .requestProfileById(let userId):
@@ -48,6 +57,8 @@ extension API {
             return "\(self.baseUrl)/admin/\(userId)"
         case .requestUpdateUserAuthority(let userId):
             return "\(self.baseUrl)/admin/\(userId)/admin"
+        case .requestCodeMail(_):
+            return "\(self.baseUrl)/mail/send/code"
         }
     }
     
@@ -57,6 +68,10 @@ extension API {
         case .requestSignin:
             return .post
         case .requestSignup:
+            return .post
+        case .verifyEmail:
+            return .post
+        case .verifyCode:
             return .post
         case .requestMyProfile:
             return .get
@@ -72,6 +87,8 @@ extension API {
             return .put
         case .requestUpdateUserAuthority:
             return .put
+        case .requestCodeMail:
+            return .post
         }
     }
 }
